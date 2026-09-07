@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoDataSci - Autonomous AI Data Scientist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            900: '#111827',
+                            800: '#1F2937',
+                            700: '#374151',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        .loader {
+            border: 3px solid #374151;
+            border-bottom-color: #3B82F6;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans">
+    <header class="bg-gray-800 p-4 shadow-md flex justify-between items-center border-b border-gray-700">
+        <div>
+            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">AutoDataSci</h1>
+            <p class="text-xs text-gray-400">100% Local In-Browser Autonomous Data Scientist</p>
+        </div>
+        <div id="status-badge" class="flex items-center gap-2 bg-gray-700 px-3 py-1 rounded-full text-sm">
+            <span id="status-indicator" class="w-2 h-2 rounded-full bg-yellow-500"></span>
+            <span id="status-text">Initializing Engine...</span>
+        </div>
+    </header>
+
+    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto w-full">
+        
+        <!-- Left Column: Data Upload & Chat -->
+        <div class="flex flex-col gap-6 lg:col-span-1">
+            
+            <!-- Upload Section -->
+            <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">1. Load Data</h2>
+                <div class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer" id="drop-zone">
+                    <input type="file" id="file-upload" accept=".csv" class="hidden">
+                    <label for="file-upload" class="cursor-pointer flex flex-col items-center">
+                        <svg class="w-10 h-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                        <span class="text-sm font-medium text-gray-300">Drop CSV file here or click to upload</span>
+                        <span class="text-xs text-gray-500 mt-1">Processed entirely locally</span>
+                    </label>
+                </div>
+                <div id="dataset-info" class="mt-4 hidden">
+                    <div class="flex justify-between text-sm text-gray-300">
+                        <span>Rows: <span id="row-count" class="font-bold">0</span></span>
+                        <span>Columns: <span id="col-count" class="font-bold">0</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Chat Section -->
+            <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg flex-1 flex flex-col h-full max-h-[500px]">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2 flex justify-between items-center">
+                    <span>2. Ask Agent</span>
+                    <span id="agent-thinking" class="hidden loader w-4 h-4"></span>
+                </h2>
+                
+                <div id="chat-history" class="flex-1 overflow-y-auto mb-4 space-y-3 pr-2 scrollbar-thin">
+                    <div class="flex gap-2">
+                        <div class="bg-blue-900 text-blue-100 rounded-lg rounded-tl-none p-3 text-sm max-w-[90%]">
+                            Hello! Upload a dataset, then ask me to analyze it. E.g., "Find the biggest predictor of churn" or "Train a model to predict X".
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <input type="text" id="chat-input" disabled placeholder="Waiting for data..." class="w-full bg-gray-900 border border-gray-700 rounded-lg py-3 px-4 text-sm focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button id="send-btn" disabled class="absolute right-2 top-2 bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Visualization & Insights -->
+        <div class="flex flex-col gap-6 lg:col-span-2">
+            
+            <!-- Summary & Insights -->
+            <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg h-64 flex flex-col">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2 flex items-center justify-between">
+                    <span>Data Story & Insights</span>
+                    <button id="copy-report" class="text-gray-400 hover:text-white text-xs hidden">Copy Report</button>
+                </h2>
+                <div id="insights-content" class="flex-1 overflow-y-auto text-sm text-gray-300 space-y-2 whitespace-pre-wrap">
+                    Waiting for data...
+                </div>
+            </div>
+
+            <!-- Plots -->
+            <div class="bg-gray-800 p-5 rounded-xl border border-gray-700 shadow-lg flex-1 min-h-[400px] flex flex-col">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Visualizations</h2>
+                <div id="plot-container" class="flex-1 w-full flex items-center justify-center text-gray-500 text-sm bg-gray-900 rounded-lg overflow-hidden border border-gray-700">
+                    Charts will appear here
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
